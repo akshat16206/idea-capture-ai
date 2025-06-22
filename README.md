@@ -1,0 +1,2 @@
+# idea-capture-ai
+
