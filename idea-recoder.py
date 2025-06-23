@@ -1,8 +1,8 @@
 import sounddevice as sd
 from scipy.io.wavfile import write
 
-fs = 16000
-seconds = 5
+fs = 32000
+seconds = 10
 
 print("🎙️ Recording...")
 audio = sd.rec(int(seconds * fs), samplerate=fs, channels=1)
