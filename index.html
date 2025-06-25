@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Idea Capture AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
+  <style>
+    h1{
+      font-size:xxx-large;
+      color: #fff;
+      font-family: 'Open Sans', sans-serif;
+      text-align: center;
+      justify-content: center;
+    }
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: 'Open Sans', sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 2rem;
+    }
+
+    #captureBtn {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: none;
+      background-color: white;
+      color: black;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #captureBtn:hover {
+      transform: scale(1.05);
+    }
+
+    #output {
+      margin-top: 1rem;
+      white-space: pre-wrap;
+      text-align: left;
+      width: 80%;
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: #111;
+      padding: 1rem;
+      border-radius: 10px;
+      border: 1px solid #444;
+    }
+
+    #searchBar {
+      padding: 0.5rem;
+      width: 300px;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    #searchResults {
+      margin-top: 1rem;
+      text-align: left;
+      width: 80%;
+    }
+
+    .result {
+      padding: 0.5rem;
+      border-bottom: 1px solid #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>IDEA-CAPTURE-AI</h1>
+  <div class="container">
+    <input type="text" id="searchBar" placeholder="Search your captured ideas..." />
+    <div id="searchResults"></div>
+
+    <button id="captureBtn">Capture</button>
+    <div id="output"></div>
+  </div>
+
+  <script>
+    // Trigger run.sh
+    document.getElementById("captureBtn").addEventListener("click", () => {
+      const output = document.getElementById("output");
+      output.innerText = "Running...\n";
+      const eventSource = new EventSource('/capture');
+
+      eventSource.onmessage = (event) => {
+        output.innerText += event.data + "\n";
+        output.scrollTop = output.scrollHeight;
+      };
+
+      eventSource.onerror = () => {
+        output.innerText += "\n[Disconnected]";
+        eventSource.close();
+      };
+    });
+
+    // Search logic
+    const searchBar = document.getElementById("searchBar");
+    const resultsDiv = document.getElementById("searchResults");
+
+    searchBar.addEventListener("input", () => {
+      const query = searchBar.value.trim();
+      if (query === "") {
+        resultsDiv.innerHTML = "";
+        return;
+      }
+
+      fetch(`/search?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+          resultsDiv.innerHTML = data.map(idea => `
+            <div class="result">
+              <strong>Raw:</strong> ${idea.raw || 'N/A'}<br>
+              <strong>Summary:</strong> ${idea.summary || 'N/A'}<br>
+              <strong>Timestamp:</strong> ${idea.timestamp || 'N/A'}
+            </div>
+          `).join('');
+        })
+        .catch(() => {
+          resultsDiv.innerHTML = "<div class='result'>Error fetching ideas.</div>";
+        });
+    });
+  </script>
+
+</body>
+</html>
+

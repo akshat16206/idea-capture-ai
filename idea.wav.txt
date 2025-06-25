@@ -1,1 +1,1 @@
- Food delivery app.
+ Train our generative audio model using an LLM like platformer to create music from text or musical prompts.
